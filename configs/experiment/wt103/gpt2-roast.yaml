@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - /experiment/wt103/gpt2.yaml
+  - override /model: gpt2
+  - override /model/gpt2_mlp_cfg@model.mlp_cfg: mlp
+
+roast:
+  redn_factor: 4
+  module_limit_size: -1
+

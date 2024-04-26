@@ -1,0 +1,2 @@
+_target_: src.models.layers.monarch_linear.MonarchLinear
+nblocks: 4
