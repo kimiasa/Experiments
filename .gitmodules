@@ -1,0 +1,4 @@
+[submodule "src/SSLinear"]
+	path = src/SSLinear
+	url = https://github.com/kimiasa/SSLinear.git
+	branch = main
