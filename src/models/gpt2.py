@@ -319,21 +319,18 @@ class GPT2Attention(nn.Module):
 
         if self.use_rotary_emb:
             query, key = self.rotary_emb(query, key)
-        
-        attn_output = F.scaled_dot_product_attention(query, key, value, attn_mask=attention_mask, dropout_p=self.attn_pdrop, is_causal=False)
-        
-        #if self.reorder_and_upcast_attn:
-        #    attn_output, attn_weights = self._upcast_and_reordered_attn(query, key, value, attention_mask, head_mask)
-        #else:
-        #    attn_output, attn_weights = self._attn(query, key, value, attention_mask, head_mask)
+        if self.reorder_and_upcast_attn:
+            attn_output, attn_weights = self._upcast_and_reordered_attn(query, key, value, attention_mask, head_mask)
+        else:
+            attn_output, attn_weights = self._attn(query, key, value, attention_mask, head_mask)
 
         attn_output = self._merge_heads(attn_output, self.num_heads, self.head_dim)
         attn_output = self.c_proj(attn_output)
         attn_output = self.resid_dropout(attn_output)
 
         outputs = (attn_output, present)
-        #if output_attentions:
-        #    outputs += (attn_weights,)
+        if output_attentions:
+            outputs += (attn_weights,)
 
         return outputs  # a, present, (attentions)
 
