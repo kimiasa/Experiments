@@ -1,0 +1,2 @@
+_target_: src.models.layers.lowrank_linear.LowrankLinear
+redn_factor: 8
