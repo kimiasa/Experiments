@@ -43,3 +43,6 @@ params_log:
 
 gpu_affinity:
   _target_: src.callbacks.gpu_affinity.GpuAffinity
+
+proton_profiler:
+  _target_: src.callbacks.proton_profiler.ProtonProfiler
