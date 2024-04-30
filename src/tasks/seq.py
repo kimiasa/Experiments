@@ -13,6 +13,8 @@ from src.utils.utils import get_logger
 from src.optim.param_grouping import group_parameters_for_optimizer
 from src.utils.checkpoint import load_checkpoint
 
+import triton.profiler as proton
+
 logger = get_logger(__name__)
 
 
@@ -82,7 +84,8 @@ class SequenceModel(LightningModule):
             logger.info(load_return)
 
     def forward(self, *args, **kwargs):
-        return self.model(*args, **kwargs)
+        with proton.scope("forward"): 
+            return self.model(*args, **kwargs)
 
     def step(self, batch: Any, is_train=True):
         try:

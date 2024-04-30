@@ -19,9 +19,9 @@ class ProtonProfiler(Callback):
         if not self.has_profiled:
             proton.activate(self.session_id) 
 
-    #def on_after_backward(self, trainer: Trainer, pl_module: LightningModule, batch_idx):
-    #    if not self.has_profiled:
-    #        proton.deactivate(self.session_id)
+    def on_after_backward(self, trainer: Trainer, pl_module: LightningModule):
+        if not self.has_profiled:
+            proton.deactivate(self.session_id)
 
     #def on_train_epoch_end(self, trainer: Trainer, pl_module: LightningModule, outputs):
     #    if self.profile_first_epoch_only and not self.has_profiled:
