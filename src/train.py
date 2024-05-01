@@ -1,6 +1,14 @@
 from typing import List, Optional
 from pathlib import Path
 
+from tabulate import tabulate
+import numpy as np
+import pandas as pd
+import torch
+
+from .SSLinear.utils import SSLIntegration
+from .SSLinear.SSL import *
+
 import hydra
 from omegaconf import OmegaConf, DictConfig
 from pytorch_lightning import (
@@ -15,6 +23,77 @@ from pytorch_lightning.loggers import Logger
 from src.utils import utils
 
 log = utils.get_logger(__name__)
+
+def get_parameters(model):
+    s = 0
+    for p in model.parameters():
+        if p.requires_grad:
+            s+= p.numel()
+            print(p.shape, p.numel())
+
+    return s
+    
+def analyse(model):
+    names = []
+    pnames = []
+    norms = []
+    for name, module in model.named_modules():
+        if name.endswith('WHelper'):
+            continue
+
+        if isinstance(module, SSL):
+            for pname, param in module.named_parameters():
+                if not param.requires_grad:
+                    continue
+                if pname in ['WHelper.weight']:
+                    norm = torch.norm(module.scale * module.WHelper.wt_comp_to_orig(param)).item()
+                else:
+                    norm = torch.norm(param).item()
+                names.append(name)
+                pnames.append(pname)
+                norms.append(norm)
+
+        else:
+            for pname, param in module.named_parameters(recurse=False):
+                if not param.requires_grad:
+                    continue
+                norm = torch.norm(param).item()
+                names.append(name)
+                pnames.append(pname)
+                norms.append(norm)
+
+    return pd.DataFrame({"name" : names, "pname" : pnames, "norm": norms})
+
+def run(config, model):
+
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    model.to(device)
+
+    print("entering roast realm!")
+
+    possible_params = get_parameters(model)
+
+    # roast if needed
+    roaster = None
+        
+    roaster = SSLIntegration.ModelRoaster(model, config.roast.redn_factor, verbose=SSLIntegration.NONE,
+                                            module_limit_size=config.roast.module_limit_size)
+
+    model = roaster.process()
+    
+    roasted_parameters = 0
+    if roaster is not None:
+        assert(possible_params == roaster.original_total_params)
+        roasted_parameters = roaster.original_roastable_params
+        
+
+    print(model, flush=True)
+    df = analyse(model)
+    print(tabulate(df, headers='keys', tablefmt='psql'))
+    norm_df = df[df.pname != "roast_array"]
+    print("full model norm", np.linalg.norm(norm_df.norm))
+    
+    return model
 
 
 def train(config: DictConfig) -> Optional[float]:
@@ -37,6 +116,9 @@ def train(config: DictConfig) -> Optional[float]:
     # Init lightning model
     model: LightningModule = hydra.utils.instantiate(config.task, cfg=config, _recursive_=False)
     datamodule: LightningDataModule = model._datamodule
+
+    if config.get("roast"):
+        model = run(config, model)
 
     # Init lightning callbacks
     callbacks: List[Callback] = []

@@ -799,6 +799,8 @@ class GPT2LMHeadModel(GPT2PreTrainedModel):
         else:    
             self.lm_head = hydra.utils.instantiate(lm_head, config.n_embd, config.vocab_size,
                                                _recursive_=False)
+        ##roast specification##
+        #self.lm_head.do_not_roast = True
         
         
 
