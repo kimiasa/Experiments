@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - /experiment/wt103/gpt2.yaml
+  #- /model/blocksparse_mlp_cfg@model.lm_head: lm_head
+  #- /model/blocksparse_mlp_cfg@model.kqv: kqv
+  - override /model: gpt2
+  - override /model/gpt2_mlp_cfg@model.mlp_cfg: blocksparselinear
+
+  
+

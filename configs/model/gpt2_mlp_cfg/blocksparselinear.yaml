@@ -1,0 +1,6 @@
+_target_: src.models.layers.mlp.MlpCustom
+linear1_cfg:
+  _target_: src.models.layers.torchblocksparse_linear.TorchBlocksparseLinear
+  density: 0.5
+linear2_cfg: ${.linear1_cfg}
+  
