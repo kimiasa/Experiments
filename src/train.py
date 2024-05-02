@@ -12,6 +12,8 @@ from pytorch_lightning import (
 )
 from pytorch_lightning.loggers import Logger
 
+from .SSLinear.SSL import SSL
+
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -70,6 +72,14 @@ def train(config: DictConfig) -> Optional[float]:
     trainer: Trainer = hydra.utils.instantiate(
         config.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
     )
+
+    for idx, (name, submodule) in enumerate(model.named_modules()):
+        initial_seed = config.seed
+        if isinstance(submodule, SSL):
+            print(f"{name} is SSL")
+            submodule.set_hash_seed(initial_seed + idx)
+        print(f"Module name: {name}, Module type: {submodule.__class__.__name__}")
+
 
     # Train the model
     log.info("Starting training!")
