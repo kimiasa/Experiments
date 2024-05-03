@@ -66,6 +66,7 @@ def analyse(model):
 
 def run(config, model):
 
+
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model.to(device)
 
@@ -82,16 +83,16 @@ def run(config, model):
     model = roaster.process()
     
     roasted_parameters = 0
-    if roaster is not None:
-        assert(possible_params == roaster.original_total_params)
-        roasted_parameters = roaster.original_roastable_params
+    #if roaster is not None:
+    #    assert(possible_params == roaster.original_total_params)
+    #    roasted_parameters = roaster.original_roastable_params
         
 
     print(model, flush=True)
-    df = analyse(model)
-    print(tabulate(df, headers='keys', tablefmt='psql'))
-    norm_df = df[df.pname != "roast_array"]
-    print("full model norm", np.linalg.norm(norm_df.norm))
+    #df = analyse(model)
+    #print(tabulate(df, headers='keys', tablefmt='psql'))
+    #norm_df = df[df.pname != "roast_array"]
+    #print("full model norm", np.linalg.norm(norm_df.norm))
     
     return model
 

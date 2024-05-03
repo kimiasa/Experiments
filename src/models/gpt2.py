@@ -124,11 +124,11 @@ class GPT2Attention(nn.Module):
 
         if kqv is None: 
             if self.is_cross_attention:
-                self.c_attn = Conv1D(2 * self.embed_dim, self.hidden_size)
-                self.q_attn = Conv1D(self.embed_dim, self.hidden_size)
+                self.c_attn = nn.Linear(self.hidden_size, 2 * self.embed_dim)
+                self.q_attn = nn.Linear(self.hidden_size, self.embed_dim)
             else:
-                self.c_attn = Conv1D(3 * self.embed_dim, self.hidden_size)
-            self.c_proj = Conv1D(self.hidden_size, self.embed_dim)
+                self.c_attn = nn.Linear(self.hidden_size, 3 * self.embed_dim)
+            self.c_proj = nn.Linear(self.embed_dim, self.hidden_size)
 
         else:
             if self.is_cross_attention:
@@ -800,7 +800,7 @@ class GPT2LMHeadModel(GPT2PreTrainedModel):
             self.lm_head = hydra.utils.instantiate(lm_head, config.n_embd, config.vocab_size,
                                                _recursive_=False)
         ##roast specification##
-        #self.lm_head.do_not_roast = True
+        self.lm_head.do_not_roast = True
         
         
 
