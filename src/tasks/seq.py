@@ -1,6 +1,7 @@
 from typing import Any, List
 
 import torch
+import numpy as np
 import hydra
 from pytorch_lightning import LightningModule, LightningDataModule
 from torchmetrics import MetricCollection
@@ -12,8 +13,6 @@ from omegaconf import OmegaConf
 from src.utils.utils import get_logger
 from src.optim.param_grouping import group_parameters_for_optimizer
 from src.utils.checkpoint import load_checkpoint
-
-import triton.profiler as proton
 
 logger = get_logger(__name__)
 
@@ -84,8 +83,27 @@ class SequenceModel(LightningModule):
             logger.info(load_return)
 
     def forward(self, *args, **kwargs):
-        with proton.scope("forward"): 
-            return self.model(*args, **kwargs)
+        starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+        repetitions = 20
+        timings=np.zeros((repetitions,1))
+        #GPU-WARM-UP
+        for _ in range(5):
+            _ = self.model(*args, **kwargs)
+        # MEASURE PERFORMANCE
+        with torch.no_grad():
+            for rep in range(repetitions):
+                starter.record()
+                _ = self.model(*args, **kwargs)
+                ender.record()
+                # WAIT FOR GPU SYNC
+                torch.cuda.synchronize()
+                curr_time = starter.elapsed_time(ender)
+                timings[rep] = curr_time
+
+        mean_syn = np.sum(timings) / repetitions
+        std_syn = np.std(timings)
+        print(mean_syn)
+        return self.model(*args, **kwargs)
 
     def step(self, batch: Any, is_train=True):
         try:
