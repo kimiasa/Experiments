@@ -2,3 +2,12 @@
 defaults:
   - /experiment/wt103/gpt2.yaml
   - override /model: gpt2
+
+
+#mode: eval
+
+#eval:
+#  checkpoint_type: pytorch
+#  ckpt: /home/ks152/Experiments/mp_rank_00_model_states.pt
+#  run_val: False  # val and test are the same for ImageNet
+#  run_test: True
