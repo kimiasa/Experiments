@@ -5,3 +5,11 @@ defaults:
   - /model/monarch_mlp_cfg@model.kqv: kqv
   - override /model: gpt2
   - override /model/gpt2_mlp_cfg@model.mlp_cfg: bflyblockdiag
+
+
+
+
+datamodule:
+  batch_size: 8  # Per GPU
+
+

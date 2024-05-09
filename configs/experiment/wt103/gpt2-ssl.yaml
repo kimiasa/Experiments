@@ -6,17 +6,8 @@ defaults:
   - override /model: gpt2
   - override /model/gpt2_mlp_cfg@model.mlp_cfg: sslinear
 
-model:
-  config:
-    n_embd: 1024
-    n_head: 16
-    n_layer: 24
 
 datamodule:
   batch_size: 8  # Per GPU
-
-train:
-  optimizer:
-    lr: 1.5e-4
   
 
