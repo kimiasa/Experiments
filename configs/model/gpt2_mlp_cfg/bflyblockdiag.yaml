@@ -1,5 +1,5 @@
 _target_: src.models.layers.mlp.MlpCustom
 linear1_cfg:
   _target_: src.models.layers.monarch_linear.MonarchLinear
-  nblocks: 4
+  nblocks: 8
 linear2_cfg: ${.linear1_cfg}

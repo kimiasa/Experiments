@@ -2,14 +2,16 @@
 defaults:
   - /experiment/wt103/gpt2.yaml
   #- /model/monarch_mlp_cfg@model.lm_head: lm_head
-  - /model/monarch_mlp_cfg@model.kqv: kqv
+  #- /model/monarch_mlp_cfg@model.kqv: kqv
   - override /model: gpt2
   - override /model/gpt2_mlp_cfg@model.mlp_cfg: bflyblockdiag
+  #- override /model/gpt2model: gpt2-large
+  #- override /model/gpt2model: gpt2-medium
 
 
 
 
 datamodule:
-  batch_size: 8  # Per GPU
+  batch_size: 32  # Per GPU
 
 

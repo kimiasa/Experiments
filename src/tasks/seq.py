@@ -35,6 +35,8 @@ class SequenceModel(LightningModule):
         self.instantiate_loss()
         self.instantiate_metrics()
 
+        self.latencies = []
+
     def instantiate_datamodule(self):
         logger.info(f"Instantiating datamodule <{self.cfg.datamodule._target_}>")
         # Calling this self.datamodule will mess with PL since it also assigns self.datamodule
@@ -103,6 +105,7 @@ class SequenceModel(LightningModule):
         mean_syn = np.sum(timings) / repetitions
         std_syn = np.std(timings)
         print(mean_syn)
+        self.latencies.append(mean_syn)
         return self.model(*args, **kwargs)
 
     def step(self, batch: Any, is_train=True):
@@ -130,6 +133,7 @@ class SequenceModel(LightningModule):
         return self.shared_step(batch, batch_idx, phase='val')
 
     def test_step(self, batch: Any, batch_idx: int):
+        print("perf: ", np.median(self.latencies))
         return self.shared_step(batch, batch_idx, phase='test')
 
     def configure_optimizers(self):

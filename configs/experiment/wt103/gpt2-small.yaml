@@ -2,9 +2,15 @@
 defaults:
   - /experiment/wt103/gpt2.yaml
   - override /model: gpt2
+  #- override /model/gpt2model: gpt2-large
+  #- override /model/gpt2model: gpt2-medium
 
 
 datamodule:
-  batch_size: 8
+  batch_size: 16
+
+#model:
+#  config:
+#    hidden_size: 1152
 
 
