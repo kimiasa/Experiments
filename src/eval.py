@@ -5,6 +5,10 @@ import sys
 from neural_compressor.config import PostTrainingQuantConfig
 from neural_compressor.quantization import fit
 
+import sys
+from neural_compressor.config import PostTrainingQuantConfig
+from neural_compressor.quantization import fit
+
 import torch
 
 import hydra
@@ -49,7 +53,8 @@ def evaluate(config: DictConfig) -> None:
     It loads trained image classification model from checkpoint.
     Then it loads example image and predicts its label.
     """
-
+    import pdb
+    pdb.set_trace()
     # load model from checkpoint
     # model __init__ parameters will be loaded from ckpt automatically
     # you can also pass some parameter explicitly to override it
