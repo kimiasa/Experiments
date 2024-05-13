@@ -1,6 +1,10 @@
 from typing import List, Optional
 from pathlib import Path
 
+import sys
+from neural_compressor.config import PostTrainingQuantConfig
+from neural_compressor.quantization import fit
+
 import torch
 
 import hydra
@@ -29,7 +33,15 @@ def load_checkpoint(path, device='cpu'):
     # T2T-ViT checkpoint is nested in the key 'state_dict_ema'
     if state_dict.keys() == {'state_dict_ema'}:
         state_dict = state_dict['state_dict_ema']
-    return state_dict
+    adjusted_state_dict = {}
+    for key, value in state_dict['module'].items():
+        print(f"Key: {key.replace('model.', '')} -> Value: {value.shape}")
+        new_key = key.replace('model.', '')
+        adjusted_state_dict[new_key] = value
+    for key, value in adjusted_state_dict.items():
+        print(f"Key: {key.replace('model.', '')} -> Value: {value.dtype}")
+    return adjusted_state_dict
+
 
 
 def evaluate(config: DictConfig) -> None:
@@ -52,22 +64,22 @@ def evaluate(config: DictConfig) -> None:
 
     if checkpoint_type == 'lightning':
         cls = hydra.utils.get_class(config.task._target_)
-        trained_model = cls.load_from_checkpoint(checkpoint_path=config.eval.ckpt)
+        model = cls.load_from_checkpoint(checkpoint_path=config.eval.ckpt)
     else:
-        trained_model: LightningModule = hydra.utils.instantiate(config.task, cfg=config,
+        model: LightningModule = hydra.utils.instantiate(config.task, cfg=config,
                                                                  _recursive_=False)
-        load_return = trained_model.model.load_state_dict(load_checkpoint(config.eval.ckpt,
-                                                                          device=trained_model.device),
+        load_return = model.model.load_state_dict(load_checkpoint(config.eval.ckpt,
+                                                                          device=model.device),
                                                           strict=False)
         log.info(load_return)
 
     # datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
-    datamodule: LightningDataModule = trained_model._datamodule
+    datamodule: LightningDataModule = model._datamodule
     datamodule.prepare_data()
     datamodule.setup()
 
     # print model hyperparameters
-    log.info(f'Model hyperparameters: {trained_model.hparams}')
+    log.info(f'Model hyperparameters: {model.hparams}')
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []
@@ -90,19 +102,60 @@ def evaluate(config: DictConfig) -> None:
     trainer: Trainer = hydra.utils.instantiate(
         config.trainer, callbacks=callbacks, logger=logger,  _convert_="partial"
     )
+    
+    from neural_compressor.quantization import fit as fit
+    from neural_compressor.config import PostTrainingQuantConfig, TuningCriterion, AccuracyCriterion
+
+
+    def eval_func_for_nc(model_n, trainer_n):
+        setattr(model, "model", model_n)
+        result = trainer_n.validate(model=model, dataloaders=datamodule.val_dataloader())
+        print("resulttttt:", result, type(result))
+        return result[0]["val/loss"]
+
+
+    def eval_func(model):
+        return eval_func_for_nc(model, trainer)
+
+    conf = PostTrainingQuantConfig(approach="static", op_type_dict={
+        "Embedding": {
+            "weight": {
+                "dtype": ["fp16"]
+            },
+            "activation": {
+                 "dtype": ["fp16"]
+            }
+        }, 
+        "Embedding": {
+            "weight": {
+                "dtype": ["fp16"]
+            },
+            "activation": {
+                 "dtype": ["fp16"]
+            }
+        }
+    }, excluded_precisions = ["fp16"]
+    ,recipes={"smooth_quant": True})
+    q_model = fit(model=model, conf=conf, calib_dataloader=datamodule.val_dataloader())
+    print(sum(p.numel() for p in q_model.model.parameters()), sum(p.numel() for p in q_model.model.parameters()), "sizzesss")
+
+
+    #woq_conf = PostTrainingQuantConfig(approach="dynamic")
+
+    #quantized_model = fit(model=model, conf=woq_conf, calib_dataloader=datamodule.test_dataloader())
 
     # Evaluate the model
     log.info("Starting evaluation!")
-    if config.eval.get('run_val', True):
-        trainer.validate(model=trained_model, datamodule=datamodule)
+    #if config.eval.get('run_val', True):
+    #    trainer.validate(model=q_model.model, datamodule=datamodule)
     if config.eval.get('run_test', True):
-        trainer.test(model=trained_model, datamodule=datamodule)
+        trainer.test(model=q_model.model, datamodule=datamodule)
 
     # Make sure everything closed properly
     log.info("Finalizing!")
     utils.finish(
         config=config,
-        model=trained_model,
+        model=model,
         datamodule=datamodule,
         trainer=trainer,
         callbacks=callbacks,

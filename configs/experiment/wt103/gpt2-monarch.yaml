@@ -5,3 +5,12 @@ defaults:
   - /model/monarch_mlp_cfg@model.kqv: kqv
   - override /model: gpt2
   - override /model/gpt2_mlp_cfg@model.mlp_cfg: bflyblockdiag
+
+#mode: eval
+
+#eval:
+#  checkpoint_type: pytorch
+#  ckpt: /home/ks152/Experiments/logs/runs/2024-05-06/21-12-25/checkpoints/None/epoch_098.ckpt/checkpoint/mp_rank_00_model_states.pt
+#  run_val: False  # val and test are the same for ImageNet
+#  run_test: True
+
