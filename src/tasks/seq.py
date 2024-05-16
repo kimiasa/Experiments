@@ -5,6 +5,7 @@ import numpy as np
 import hydra
 from pytorch_lightning import LightningModule, LightningDataModule
 from torchmetrics import MetricCollection
+import triton.profiler as proton
 
 from einops import rearrange
 
@@ -85,27 +86,15 @@ class SequenceModel(LightningModule):
             logger.info(load_return)
 
     def forward(self, *args, **kwargs):
-        starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
-        repetitions = 20
-        timings=np.zeros((repetitions,1))
+        # starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+        repetitions = 25
+        # timings=np.zeros((repetitions,1))
         #GPU-WARM-UP
         for _ in range(5):
             _ = self.model(*args, **kwargs)
-        # MEASURE PERFORMANCE
-        with torch.no_grad():
-            for rep in range(repetitions):
-                starter.record()
+        for rep in range(repetitions):
+            with proton.scope("forward"):
                 _ = self.model(*args, **kwargs)
-                ender.record()
-                # WAIT FOR GPU SYNC
-                torch.cuda.synchronize()
-                curr_time = starter.elapsed_time(ender)
-                timings[rep] = curr_time
-
-        mean_syn = np.sum(timings) / repetitions
-        std_syn = np.std(timings)
-        print(mean_syn)
-        self.latencies.append(mean_syn)
         return self.model(*args, **kwargs)
 
     def step(self, batch: Any, is_train=True):
@@ -133,7 +122,6 @@ class SequenceModel(LightningModule):
         return self.shared_step(batch, batch_idx, phase='val')
 
     def test_step(self, batch: Any, batch_idx: int):
-        print("perf: ", np.median(self.latencies))
         return self.shared_step(batch, batch_idx, phase='test')
 
     def configure_optimizers(self):

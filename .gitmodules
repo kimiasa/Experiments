@@ -2,3 +2,7 @@
 	path = src/SSLinear
 	url = git@github.com:kimiasa/SSLinear.git
 	branch = main
+
+[submodule "src/ssl-baselines"]
+	path = src/ssl-baselines
+	url = git@github.com:apd10/ssl-baselines.git

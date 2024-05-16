@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - ssl_bench_mlp/base_gpt2.yaml
+  - override /model: gpt2
+  - override /model/gpt2_mlp_cfg@model.mlp_cfg: sslinear8x
+
+
+datamodule:
+  batch_size: 16  # Per GPU

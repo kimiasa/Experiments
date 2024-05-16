@@ -5,9 +5,6 @@ import hydra
 import triton.profiler as proton
 from omegaconf import OmegaConf, DictConfig
 
-
-proton_benchmark_dir = "./proton_benchmarks/"
-
 # load environment variables from `.env` file if it exists
 # recursively searches for `.env` in all folders starting from work dir
 dotenv.load_dotenv(override=True)
@@ -25,6 +22,7 @@ def dictconfig_filter_key(d: DictConfig, fn: Callable) -> DictConfig:
 
 @hydra.main(config_path="configs/", config_name="config.yaml")
 def main(config: DictConfig):
+
     # Remove config keys that start with '__'. These are meant to be used only in computing
     # other entries in the config.
     config = dictconfig_filter_key(config, lambda k: not k.startswith('__'))
@@ -46,25 +44,19 @@ def main(config: DictConfig):
     if config.get("print_config"):
         utils.print_config(config, resolve=True)
 
-    print(config.get("exp_name"))
-    exp_name = config.get("exp_name")
 
-    proton_path = "profile"
-    if exp_name:
-        proton_path = proton_benchmark_dir + exp_name
-
-
-    proton.start(name=proton_path)
-
+    # custom config name for proton scope
+    exp_name = config['exp_name']
+    print(f"saving to {exp_name}")
     # Train model
     mode = config.get('mode', 'train')
     if mode not in ['train', 'eval']:
         raise NotImplementedError(f'mode {mode} not supported')
     if mode == 'train':
-        with proton.scope("exp_name"):
+        proton.start(name=exp_name, hook="triton")
+        with proton.scope(exp_name):
             train(config)
-        print("Finalizing proton")
-
+        proton.finalize()
         return
 
     elif mode == 'eval':
@@ -72,5 +64,4 @@ def main(config: DictConfig):
 
 
 if __name__ == "__main__":
-    main()
-    proton.finalize()
+        main()

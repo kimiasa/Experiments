@@ -1,0 +1,4 @@
+_target_: src.models.layers.mlp.MlpCustom
+linear1_cfg:
+  _target_: src.ssl-baselines.blocksparse.BlockSparseLinear
+linear2_cfg: ${.linear1_cfg}

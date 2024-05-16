@@ -1,0 +1,5 @@
+_target_: src.models.layers.mlp.MlpCustom
+linear1_cfg:
+  _target_: src.ssl-baselines.lowrank.LowRankLinear
+  redn_factor: 8
+linear2_cfg: ${.linear1_cfg}

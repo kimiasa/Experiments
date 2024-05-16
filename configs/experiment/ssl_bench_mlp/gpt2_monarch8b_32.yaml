@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - ssl_bench_mlp/base_gpt2.yaml
+  #- /model/monarch_mlp_cfg@model.lm_head: lm_head
+  #- /model/monarch_mlp_cfg@model.kqv: kqv
+  - override /model: gpt2
+  - override /model/gpt2_mlp_cfg@model.mlp_cfg: monarch8b
+  #- override /model/gpt2model: gpt2-large
+  #- override /model/gpt2model: gpt2-medium
+
+datamodule:
+  batch_size: 32  # Per GPU
