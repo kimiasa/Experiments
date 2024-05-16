@@ -23,7 +23,7 @@ and continue running other configurations.
 
 2. To generate a unified CSV with only the timings for the `forward` step, run
 ```sh
-python generate_benchmark_csv.py --directory proton_benchmarks/ --csv_output_path <benchmarkfile.csv>
+python generate_benchmark_csv.py --directory proton_benchmarks/ --csv_output_path benchmarkfile.csv
 ```
 Which will generate a csv file with all of the experimental configs, and in the `avgTime (inc)` column,
 show the average time a single inference batch took.
