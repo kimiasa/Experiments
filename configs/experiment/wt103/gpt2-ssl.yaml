@@ -3,7 +3,7 @@ defaults:
   - /experiment/wt103/gpt2.yaml
   #- /model/ssl_mlp_cfg@model.lm_head: lm_head
   #- /model/ssl_mlp_cfg@model.kqv: kqv
-  - override /model: gpt2
+
   - override /model/gpt2_mlp_cfg@model.mlp_cfg: sslinear
   #- override /model/gpt2model: gpt2-large
   #- override /model/gpt2model: gpt2-medium

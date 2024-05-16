@@ -11,7 +11,8 @@ All experiment configs for SSLinear are specified in `configs/experiments/ssl_be
 These experiments run on GPT2 for 25 iterations, and generate `.hatchet` files using proton
 to the `./proton_benchmarks` directory. They run in batch sizes of `8, 16, 32`.
 
-0. (Be sure to init all the submodules)
+0. First, be sure to init all the submodules. To modify any parameters shared by multiple runs
+(e.g. number of devices, base model, etc.), you can modify `configs/experiments/ssl_bench_mlp/base_gpt2.yaml`
 
 1. To run the experiment script, run the following:
 ```sh
