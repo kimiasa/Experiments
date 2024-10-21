@@ -24,18 +24,11 @@ class ParamsLog(Callback):
         logs = {}
         if self._log_stats.total_params_log:
             logs["model/params_total"] = sum(p.numel() for p in pl_module.parameters())
-            for name, param in pl_module.named_parameters(): print(name, param.shape, param.numel())
         if self._log_stats.trainable_params_log:
             logs["model/params_trainable"] = sum(p.numel() for p in pl_module.parameters()
                                              if p.requires_grad)
-            for name, param in pl_module.named_parameters():
-                if param.requires_grad: 
-                    print(name, param.shape, param.numel())
         if self._log_stats.non_trainable_params_log:
             logs["model/params_not_trainable"] = sum(p.numel() for p in pl_module.parameters()
                                                      if not p.requires_grad)
-            for name, param in pl_module.named_parameters():
-                if not param.requires_grad: 
-                    print(name, param.shape, param.numel())
         if trainer.logger is not None:
             trainer.logger.log_hyperparams(logs)

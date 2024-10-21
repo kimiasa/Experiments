@@ -34,16 +34,14 @@ class MlpCustom(nn.Module):
         if linear1_cfg is None:
             self.fc1 = nn.Linear(in_features, hidden_features)
         else:
-            #if 'seed' in linear1_cfg and layer_idx is not None:
-            #    linear1_cfg['seed'] = linear1_cfg['seed'] * layer_idx
+            linear1_cfg['layer_idx'] = layer_idx+1
             self.fc1 = hydra.utils.instantiate(linear1_cfg, in_features, hidden_features,
                                                _recursive_=False)
         self.act = act_layer() if act_fn is None else act_fn
         if linear2_cfg is None:
             self.fc2 = nn.Linear(hidden_features, out_features)
         else:
-            #if 'seed' in linear2_cfg and layer_idx is not None:
-            #    linear2_cfg['seed'] = linear2_cfg['seed'] * layer_idx
+            linear2_cfg['layer_idx'] = layer_idx+1000
             self.fc2 = hydra.utils.instantiate(linear2_cfg, hidden_features, out_features,
                                                _recursive_=False)
         self.drop = nn.Dropout(drop)

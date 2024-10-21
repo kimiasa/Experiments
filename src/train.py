@@ -73,15 +73,8 @@ def train(config: DictConfig) -> Optional[float]:
         config.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
     )
 
-    for idx, (name, submodule) in enumerate(model.named_modules()):
-        initial_seed = config.seed
-        if isinstance(submodule, SSL):
-            print(f"{name} is SSL")
-            submodule.set_hash_seed(initial_seed + idx)
-        print(f"Module name: {name}, Module type: {submodule.__class__.__name__}")
-
-
     # Train the model
+    log.info(model)
     log.info("Starting training!")
     trainer.fit(model=model, datamodule=datamodule)
 
