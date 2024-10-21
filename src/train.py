@@ -12,7 +12,7 @@ from pytorch_lightning import (
 )
 from pytorch_lightning.loggers import Logger
 
-from .SSLinear.SSL import SSL
+from sketch_structured_linear.SSL import SSL
 
 from src.utils import utils
 
