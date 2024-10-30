@@ -12,7 +12,8 @@ from pytorch_lightning import (
 )
 from pytorch_lightning.loggers import Logger
 
-from sketch_structured_linear.SSL import SSL
+from sketch_structured_linear.SSLProjection import convert_to_ss_linear as ConvertSSL
+
 
 from src.utils import utils
 
@@ -39,6 +40,11 @@ def train(config: DictConfig) -> Optional[float]:
     # Init lightning model
     model: LightningModule = hydra.utils.instantiate(config.task, cfg=config, _recursive_=False)
     datamodule: LightningDataModule = model._datamodule
+
+    if config.get("roast"):
+        model = ConvertSSL(model, reduction_factor=config.roast.redn_factor, 
+                        init_seed=config.seed, skip_pattern=['lm_head'])
+        print(model)
 
     # Init lightning callbacks
     callbacks: List[Callback] = []
