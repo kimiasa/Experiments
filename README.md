@@ -8,9 +8,8 @@ Credits for the original codebase go to the initial contributors, with all new m
 ```sh
 pip install -r requirements.txt
 ```
-The fp16 works on A100 and up versions
 ### Training
-Mixed-precision-training (using FP16 tensorss) is supported on A100 GPUs and newer models.
+Mixed-precision training (using FP16 tensors) is supported on A100 GPUs and newer models.
 ### SS1
 ```sh
 python run.py experiment=wt103/gpt2-ssl
