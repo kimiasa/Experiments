@@ -1,4 +1,6 @@
+## Release Notes
 
+This repository is a fork of [https://github.com/HazyResearch/fly](https://github.com/HazyResearch/fly), specifically adapted to benchmark using SS1, Monarch, and low-rank matrices within the GPT2 architecture, with the standard model as baseline. This repository includes modifications to compare performance across these configurations, aligned with the experiments discussed in our paper.
 
 ### Inference benchmarking for SSLinear
 All experiment configs for SSLinear are specified in `configs/experiments/ssl_bench_mlp`. 
